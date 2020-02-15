@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="https://rmap.ekispert.jp/production/rosen.css">
+    <script src="https://rmap.ekispert.jp/production/rosen.js"></script>
+    <style>
+      body {
+        margin: 0;
+      }
+      html,
+      body,
+      #map {
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
+      let rosen;
+      function init(api_key) {
+        // window.postMessageReactNative = window.postMessage;
+        // window.postMessage = window.originalPostMessage;
+        rosen = new Rosen("map", {
+          apiKey: api_key
+          // consoleViewControl: true
+        });
+        
+        rosen.on("selectStation", function(data){
+          if (data.stations.length > 0) {
+            let
+              station = data.stations[0],
+              ret = {
+                "code": station.code,
+                "name": station.name
+              };
+            rosen.setStationMarker(station.code);
+            let ret_string = JSON.stringify(ret);
+            window.ReactNativeWebView.postMessage(ret_string);
+          }
+        });
+      }
+      
+      window.addEventListener("message", (event) => {
+        if (event && event.data) {
+          try {
+            data = JSON.parse(event.data);
+            if (data.type == "init_map") {
+              init(data.api_key);
+            }
+          } catch (e) {
+            console.log(e);
+          }
+        }
+      }, false);
+    </script>
+  </body>
+</html>
